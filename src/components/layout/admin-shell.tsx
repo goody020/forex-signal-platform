@@ -8,8 +8,8 @@ const adminNav = [
   { href: "/admin/signals/new", label: "New Signal" },
   { href: "/admin/users", label: "Users" },
   { href: "/admin/content", label: "Content" },
-    { href: "/admin/engine", label: "Engine" },
-      { href: "/admin/confidence", label: "Confidence" },
+  { href: "/admin/engine", label: "Engine" },
+  { href: "/admin/confidence", label: "Confidence" },
   { href: "/dashboard", label: "Member View" },
 ];
 
@@ -59,7 +59,7 @@ export function AdminShell({
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-10 flex border-t border-zinc-800 bg-zinc-950/95 backdrop-blur md:hidden">
-        {adminNav.map((item) => (
+        {adminNav.slice(0, 5).map((item) => (
           <Link
             key={item.href}
             href={item.href}
