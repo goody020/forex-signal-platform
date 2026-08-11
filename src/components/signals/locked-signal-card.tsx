@@ -21,6 +21,9 @@ export function LockedSignalCard({
         <span className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-300">
           PREMIUM
         </span>
+        <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+          Confidence 8+/10
+        </span>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
