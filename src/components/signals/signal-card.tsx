@@ -7,8 +7,9 @@ export function SignalCard({
 }: {
   signal: Signal & { symbol: SymbolModel };
 }) {
-  const confidence = confidenceFromLabel(signal.qualityLabel ?? "WEAK_SETUP");
-  const dp = signal.symbol.priceDecimals;
+  const confidence =
+    signal.confidence ??
+    confidenceFromLabel(signal.qualityLabel ?? "WEAK_SETUP");  const dp = signal.symbol.priceDecimals;
 
   return (
     <Link

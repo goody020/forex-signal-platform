@@ -270,6 +270,7 @@ model Signal {
   
   qualityScore Int?
   qualityLabel QualityLabel?
+  confidence     Int?
 
   analysisMd  String?
   reasoningMd String?

@@ -9,6 +9,7 @@ const adminNav = [
   { href: "/admin/users", label: "Users" },
   { href: "/admin/content", label: "Content" },
     { href: "/admin/engine", label: "Engine" },
+      { href: "/admin/confidence", label: "Confidence" },
   { href: "/dashboard", label: "Member View" },
 ];
 
