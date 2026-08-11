@@ -20,9 +20,15 @@ export default async function AdminEnginePage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Signal Engine</h1>
-          <p className="mt-1 inline-block rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-300">
-            {DEMO_DATA_LABEL} — not live market data
-          </p>
+                    {latestRun?.provider === "FINNHUB" ? (
+            <p className="mt-1 inline-block rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+              LIVE MARKET DATA (Finnhub)
+            </p>
+          ) : (
+            <p className="mt-1 inline-block rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-300">
+              {DEMO_DATA_LABEL} — not live market data
+            </p>
+          )}
         </div>
         <form action={runEngineAction}>
           <button className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500">

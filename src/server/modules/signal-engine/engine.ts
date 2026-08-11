@@ -1,7 +1,6 @@
 import { prisma } from "@/server/db/client";
 import { defaultSignalEngineSettings } from "@/server/constants/signal-engine";
 import type { SignalEngineSettings } from "@/server/constants/signal-engine";
-import { getDemoCandles } from "../market-data/demo-provider";
 import {
   atr,
   ema,
@@ -43,9 +42,10 @@ export async function loadEngineSettings(): Promise<SignalEngineSettings> {
   );
 }
 
-export function analyzeSymbol(symbolId: number, symbolCode: string): EngineCandidateResult {
-  const settingsSync = defaultSignalEngineSettings; // weights applied by caller via returned factors
-  const candles = getDemoCandles(symbolCode, 300);
+export function analyzeSymbol(
+  symbolId: number,
+  candles: Candle[]
+): EngineCandidateResult {
   const closes = candles.map((c) => c.close);
 
   const ema50arr = ema(closes, 50);
@@ -60,7 +60,6 @@ export function analyzeSymbol(symbolId: number, symbolCode: string): EngineCandi
   const direction: "BUY" | "SELL" = close > ema200 ? "BUY" : "SELL";
   const bullishTrend = ema50 > ema200;
 
-  // --- factor scores (0..1) ---
   const trend =
     (direction === "BUY") === bullishTrend &&
     (direction === "BUY" ? close > ema50 : close < ema50)
@@ -72,18 +71,25 @@ export function analyzeSymbol(symbolId: number, symbolCode: string): EngineCandi
   let structure = 0.5;
   if (direction === "BUY" && lastLows.length === 2 && lastLows[1] > lastLows[0])
     structure = 1;
-  if (direction === "SELL" && lastHighs.length === 2 && lastHighs[1] < lastHighs[0])
+  if (
+    direction === "SELL" &&
+    lastHighs.length === 2 &&
+    lastHighs[1] < lastHighs[0]
+  )
     structure = 1;
 
   const supports = lows.filter((l) => l < close);
   const resistances = highs.filter((h) => h > close);
-  const nearestSupport = supports.length ? Math.max(...supports) : close - atr14 * 2;
-  const nearestResistance = resistances.length ? Math.min(...resistances) : close + atr14 * 2;
+  const nearestSupport = supports.length
+    ? Math.max(...supports)
+    : close - atr14 * 2;
+  const nearestResistance = resistances.length
+    ? Math.min(...resistances)
+    : close + atr14 * 2;
 
   const srDistance =
     direction === "BUY" ? close - nearestSupport : nearestResistance - close;
-  const sr =
-    srDistance > 0.3 * atr14 && srDistance < 1.5 * atr14 ? 1 : 0.5;
+  const sr = srDistance > 0.3 * atr14 && srDistance < 1.5 * atr14 ? 1 : 0.5;
 
   let momentum = 0.5;
   if (direction === "BUY") {
@@ -112,8 +118,6 @@ export function analyzeSymbol(symbolId: number, symbolCode: string): EngineCandi
 
   const tp1 = direction === "BUY" ? entry + 1.5 * risk : entry - 1.5 * risk;
   const tp2 = direction === "BUY" ? entry + 2.5 * risk : entry - 2.5 * risk;
-
-  void settingsSync;
 
   return {
     symbolId,
@@ -176,27 +180,18 @@ export function scoreCandidate(
 
   const reasons: string[] = [];
   if (score < settings.minimumQualityScore)
-    reasons.push(`Quality ${score} below minimum ${settings.minimumQualityScore}`);
+    reasons.push(
+      `Quality ${score} below minimum ${settings.minimumQualityScore}`
+    );
   if (1.5 < settings.minimumRiskReward)
     reasons.push(`Fixed 1.5R below minimum ${settings.minimumRiskReward}`);
   if (result.analysis.atr14 > result.analysis.close * 0.004)
     reasons.push("Volatility too high");
 
-  return { ...result, qualityScore: score, qualityLabel: label, rejectionReasons: reasons };
-}
-
-export function aggregateH4(candles: Candle[]): Candle[] {
-  const out: Candle[] = [];
-  for (let i = 0; i + 3 < candles.length; i += 4) {
-    const chunk = candles.slice(i, i + 4);
-    out.push({
-      time: chunk[0].time,
-      open: chunk[0].open,
-      close: chunk[3].close,
-      high: Math.max(...chunk.map((c) => c.high)),
-      low: Math.min(...chunk.map((c) => c.low)),
-      volume: 0,
-    });
-  }
-  return out;
+  return {
+    ...result,
+    qualityScore: score,
+    qualityLabel: label,
+    rejectionReasons: reasons,
+  };
 }
