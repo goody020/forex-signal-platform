@@ -3,6 +3,7 @@
 import { randomUUID } from "crypto";
 import { hash, verify } from "@node-rs/argon2";
 import { prisma } from "@/server/db/client";
+import { sendEmail } from "@/server/services/email";
 
 export type AuthMessageState = { message?: string; error?: string } | null;
 
@@ -32,14 +33,18 @@ export async function requestPasswordReset(
     });
 
     const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001";
-    console.log(
-      `[CONSOLE EMAIL] Password reset for ${email}:\n${base}/reset-password?token=${token}&email=${encodeURIComponent(email)}`
-    );
+    const link = `${base}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
+
+    await sendEmail({
+      to: email,
+      subject: "Reset your password",
+      html: `<p>You requested a password reset.</p><p><a href="${link}">Click here to reset your password</a></p><p>This link expires in 1 hour. If you did not request this, ignore this email.</p>`,
+    });
   }
 
   return {
     message:
-      "If that account exists, a reset link was created. In development it appears in the terminal running pnpm dev.",
+      "If that account exists, a reset link was sent to the email address.",
   };
 }
 

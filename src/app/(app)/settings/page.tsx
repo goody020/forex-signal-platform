@@ -17,8 +17,7 @@ export default async function SettingsPage() {
         action={updatePreferences}
         className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6"
       >
-        <h2 className="text-lg font-medium">Notification Preferences</h2>
-
+        <h2 className="text-lg font-medium">In-App Notifications</h2>
         <div className="mt-5 space-y-4 text-sm text-zinc-300">
           <label className="flex items-center gap-3">
             <input
@@ -29,7 +28,6 @@ export default async function SettingsPage() {
             />
             Notify me when a new signal is published
           </label>
-
           <label className="flex items-center gap-3">
             <input
               type="checkbox"
@@ -39,7 +37,28 @@ export default async function SettingsPage() {
             />
             Notify me about signal updates (TP hit, SL hit, cancelled)
           </label>
+        </div>
 
+        <h2 className="mt-8 text-lg font-medium">Email Notifications</h2>
+        <div className="mt-5 space-y-4 text-sm text-zinc-300">
+          <label className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              name="emailNewSignal"
+              defaultChecked={pref?.emailNewSignal ?? true}
+              className="h-4 w-4 accent-emerald-500"
+            />
+            Email me when a new signal is published
+          </label>
+          <label className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              name="emailSignalStatus"
+              defaultChecked={pref?.emailSignalStatus ?? true}
+              className="h-4 w-4 accent-emerald-500"
+            />
+            Email me about signal updates
+          </label>
           <label className="flex items-center gap-3">
             <input
               type="checkbox"
@@ -55,11 +74,6 @@ export default async function SettingsPage() {
           Save Preferences
         </button>
       </form>
-
-      <p className="text-xs text-zinc-600">
-        Email and push channels will activate once email delivery is
-        connected in a later lesson.
-      </p>
     </div>
   );
 }

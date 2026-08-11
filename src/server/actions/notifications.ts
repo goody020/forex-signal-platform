@@ -34,15 +34,25 @@ export async function updatePreferences(formData: FormData): Promise<void> {
   const inAppNewSignal = formData.get("inAppNewSignal") === "on";
   const inAppSignalStatus = formData.get("inAppSignalStatus") === "on";
   const weeklyReport = formData.get("weeklyReport") === "on";
+  const emailNewSignal = formData.get("emailNewSignal") === "on";
+  const emailSignalStatus = formData.get("emailSignalStatus") === "on";
 
   await prisma.userNotificationPreference.upsert({
     where: { userId: session.user.id },
-    update: { inAppNewSignal, inAppSignalStatus, weeklyReport },
+    update: {
+      inAppNewSignal,
+      inAppSignalStatus,
+      weeklyReport,
+      emailNewSignal,
+      emailSignalStatus,
+    },
     create: {
       userId: session.user.id,
       inAppNewSignal,
       inAppSignalStatus,
       weeklyReport,
+      emailNewSignal,
+      emailSignalStatus,
     },
   });
 

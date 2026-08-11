@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { z } from "zod";
 import { hash } from "@node-rs/argon2";
 import { prisma } from "@/server/db/client";
+import { sendEmail } from "@/server/services/email";
 
 const signupSchema = z.object({
   name: z.string().min(2).max(60),
@@ -41,7 +43,7 @@ export async function POST(req: Request) {
 
   const passwordHash = await hash(password);
 
-  await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       email: normalizedEmail,
       passwordHash,
@@ -61,5 +63,30 @@ export async function POST(req: Request) {
     },
   });
 
+  try {
+    const token = randomUUID();
+    const hashedToken = await hash(token);
+
+    await prisma.verificationToken.create({
+      data: {
+        identifier: `verify:${normalizedEmail}`,
+        token: hashedToken,
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+
+    const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001";
+    const link = `${base}/verify-email?token=${token}&email=${encodeURIComponent(normalizedEmail)}`;
+
+    await sendEmail({
+      to: normalizedEmail,
+      subject: "Verify your email",
+      html: `<p>Welcome to Forex Signal Platform!</p><p><a href="${link}">Click here to verify your email address</a></p><p>This link expires in 24 hours.</p>`,
+    });
+  } catch {
+    // never block signup because of email issues
+  }
+
+  void user;
   return NextResponse.json({ ok: true });
 }
