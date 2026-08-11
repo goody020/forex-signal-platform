@@ -1,25 +1,27 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const FROM =
-  process.env.EMAIL_FROM ?? "Forex Signals <onboarding@resend.dev>";
+const user = process.env.EMAIL_USER;
+const pass = process.env.EMAIL_PASS;
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: { user, pass },
+});
 
 export async function sendEmail(input: {
   to: string;
   subject: string;
   html: string;
 }) {
-  const key = process.env.RESEND_API_KEY;
-
-  if (!key) {
+  if (!user || !pass) {
     console.log(
       `[CONSOLE EMAIL]\nTo: ${input.to}\nSubject: ${input.subject}\n${input.html}`
     );
     return;
   }
 
-  const resend = new Resend(key);
-  await resend.emails.send({
-    from: FROM,
+  await transporter.sendMail({
+    from: `"Forex Signals" <${user}>`,
     to: input.to,
     subject: input.subject,
     html: input.html,
