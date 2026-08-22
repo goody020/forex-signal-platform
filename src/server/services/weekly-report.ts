@@ -63,14 +63,21 @@ export async function sendWeeklyReports(): Promise<number> {
     <p><a href="${base}">View the platform</a></p>
   `;
 
-  for (const user of users) {
-    if (!user.email) continue;
-    await sendEmail({
-      to: user.email,
-      subject: "Your weekly performance report",
-      html,
-    });
-  }
+  // PARALLEL sending + one failure won't kill the rest
+  await Promise.all(
+    users.map(async (user) => {
+      if (!user.email) return;
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: "Your weekly performance report",
+          html,
+        });
+      } catch {
+        // skip failed recipient, keep going
+      }
+    })
+  );
 
   return users.length;
 }
